@@ -1,0 +1,118 @@
+%%%%%%%%%%%%%% Packages used for drawing the trees %%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{graphicx}
+
+% for coloring figures; load before tikz to use dvipsnames
+% if you get option clash for xcolor, replace 'Green' with 'cyan' in color defs
+\usepackage{xcolor}
+%\usepackage{tikz} % for drawing (GT graphs in particular)
+\usepackage{forest} % should be better than the standard tikz trees
+	\usetikzlibrary{shapes} % for triangle shaped nodes
+	\usetikzlibrary{calc} % for calculating coordinates
+\usepackage{xparse}	% for defining macros with optional argumentss
+
+%%%%%%%%%%%%%%% Node style definitions %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% node sizes setup
+\newlength{\nodesize}
+% this is meant to be adjustable, but doing so messes up level distances, and requires adjusting l sep for chance and terminal nodes
+\setlength{\nodesize}{2.5em}
+% Player colors
+\colorlet{chance_color}{black}
+\colorlet{pl0_color}{chance_color}
+\colorlet{chance_text}{white}
+\colorlet{pl1_color}{magenta!50}
+\colorlet{pl2_color}{cyan!50}
+\colorlet{pl0_infoset_color}{pl0_color}
+\colorlet{pl1_infoset_color}{magenta!75}
+\colorlet{pl2_infoset_color}{cyan!75}
+% player 1 and 2, chance, terminal nodes
+\forestset{
+	basenode/.style = {draw,
+		inner sep = 0,
+		outer ysep = 0,
+		minimum size = \nodesize,
+		anchor = north
+	},
+	playernode/.style={basenode, 
+		shape = regular polygon,
+		regular polygon sides = 3,
+	},
+	pl1/.style={playernode, fill=pl1_color},
+	pl2/.style={playernode, fill=pl2_color, shape border rotate=180},
+	chance/.style = {basenode,
+		fill=pl0_color, text=chance_text,
+		circle,
+		minimum size=0.75*\nodesize,
+%		child anchor=center,
+		l sep=0.4765\nodesize,
+	},
+	terminal/.style = {basenode,
+		shape = regular polygon,
+		regular polygon sides = 4,
+		l sep=0.47\nodesize,
+		minimum size = 1.07\nodesize
+	}
+}
+% information sets
+\tikzset{
+	partition/.style = {
+		draw,
+%		inner xsep = 0.1\nodesize,
+%		inner ysep = 0.1\nodesize,
+		rounded corners = 5,
+		inner sep=0.1\nodesize,
+	},
+	infoset/.style = {
+		partition,
+		draw=pl1_infoset_color,
+	},
+	augmented/.style = {
+		dashed
+	},
+	opponent/.style = {
+		draw=pl2_infoset_color,
+		% bigger separation than pl1, to prevent overlapping with pl1 infosets
+		inner sep=0.225\nodesize,
+	},
+	% triangles are not symmetric, the ``classical'' infosets shift the rectangles
+	% to make the spaces above and below nodes look more similar
+	pl1_cl_infoset/.style = {infoset, yshift=-0.035\nodesize},
+	pl2_cl_infoset/.style = {infoset,
+		opponent,
+		inner sep=0.1\nodesize,
+		yshift=0.035\nodesize
+	},
+	public_state/.style = {
+		partition,
+		draw=pl0_infoset_color,
+		inner sep=0.125\nodesize,
+		rounded corners = 7,
+	},
+}
+% infosets connected by lines
+\tikzset{
+	line_infoset/.style = {
+		draw=pl1_infoset_color,
+		dashed
+	},
+	opp_line_infoset/.style = {
+		draw=pl2_infoset_color,
+		dashed
+	}
+}
+% a shortcut for listing all corners of a triangle-node
+\newcommand{\corners}[1]{#1.corner 1)(#1.corner 2)(#1.corner 3}
+% measure the angle between node A and B (without '()' brackets around)
+% and save it into `\angle`
+\newcommand{\measureAngle}[2]{
+	\node(dummy#1)[draw=none] at (#1) {};
+	\node(dummy#2)[draw=none] at (#2) {};
+	\pgfmathanglebetweenpoints
+		{\pgfpointanchor{dummy#1}{center}}
+		{\pgfpointanchor{dummy#2}{center}}
+	\edef\angle{\pgfmathresult}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%% just some nonsense to be able to have infosets in the background
+\pgfdeclarelayer{bg}    % declare background layer
+\pgfsetlayers{bg,main}  % set the order of the layers (main is the standard layer)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
